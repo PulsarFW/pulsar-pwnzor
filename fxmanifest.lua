@@ -1,22 +1,23 @@
 fx_version("cerulean")
 games({ "gta5" })
 lua54("yes")
+version('1.0.0')
 client_script("@pulsar-core/exports/cl_error.lua")
 
 client_scripts({
-	"cl_*.lua",
-	"client/*.lua",
+  "cl_*.lua",
+  "client/*.lua",
 })
 
 server_scripts({
-	"sv_*.lua",
-	"server/*.lua",
+  "sv_*.lua",
+  "server/*.lua",
 })
 
 exports({
-	"SetupClient",
+  "SetupClient",
 })
 
 server_exports({
-	"SetupServer",
+  "SetupServer",
 })
