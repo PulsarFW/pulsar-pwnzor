@@ -17,10 +17,9 @@ jobs:
 
       - name: Bundle files
         run: |
-          mkdir -p ./temp/pulsar-pwnzor
-          cp ./{README.md,fxmanifest.lua,cl_config.lua,sv_config.lua} ./temp/pulsar-pwnzor
-          cp -r ./{client,server} ./temp/pulsar-pwnzor
-          cd ./temp && zip -r ../pulsar-pwnzor.zip ./pulsar-pwnzor
+          mkdir -p staging/pulsar-pwnzor
+          rsync -a --exclude='.github' --exclude='node_modules' --exclude='staging' . staging/pulsar-pwnzor/
+          cd staging && zip -r ../pulsar-pwnzor.zip pulsar-pwnzor/
 
       - name: Create release
         uses: softprops/action-gh-release@v2
