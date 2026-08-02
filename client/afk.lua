@@ -6,7 +6,7 @@ local submitting = false
 local afkCd = false
 
 local function GetCode()
-	exports["pulsar-core"]:ServerCallback("Pwnzor:GetCode", {}, function(c)
+	plsr.Callbacks:ServerCallback("Pwnzor:GetCode", {}, function(c)
 		afkAnswer = c
 	end)
 end
@@ -21,7 +21,7 @@ local function ShowInput()
 		Wait(1)
 	end
 
-	exports['pulsar-hud']:InputShow("Are You There?", string.format('Enter: "%s" To Prevent Being Kicked', afkAnswer), {
+	plsr.Input:Show("Are You There?", string.format('Enter: "%s" To Prevent Being Kicked', afkAnswer), {
 		{
 			id = "code",
 			type = "text",
@@ -55,16 +55,13 @@ local function StartKickTimer()
 		while isAfk do
 			if time > AFKTimer then
 				if isAfk and not submitting and not (GlobalState["DisableAFK"] or false) then
-					exports["pulsar-core"]:ServerCallback("Pwnzor:AFK")
+					plsr.Callbacks:ServerCallback("Pwnzor:AFK")
 				end
 			end
 
-			exports["pulsar-hud"]:Notification("error",
-				"You Will Be Kicked In " .. (AFKTimer - time) .. " Seconds For Being AFK",
-				-1,
-				nil,
-				nil,
-				"pwnzor-afk"
+			plsr.Notification.Persistent:Error(
+				"pwnzor-afk",
+				"You Will Be Kicked In " .. (AFKTimer - time) .. " Seconds For Being AFK"
 			)
 
 			time += 1
@@ -86,17 +83,17 @@ end
 
 AddEventHandler("Pwnzor:Client:EnterAFKCode", function(vals, data)
 	submitting = true
-	exports["pulsar-core"]:ServerCallback("Pwnzor:EnterCode", vals.code, function(c)
+	plsr.Callbacks:ServerCallback("Pwnzor:EnterCode", vals.code, function(c)
 		if c then
 			afkAnswer = false
-			exports["pulsar-hud"]:Notification("remove", nil, nil, nil, nil, "pwnzor-afk")
+			plsr.Notification.Persistent:Remove("pwnzor-afk")
 
 			isAfk = false
 			submitting = false
 			inputShowing = false
 
 			afkCd = true
-			SetTimeout(1000 * GlobalState["AFKTimer"], function()
+			Citizen.SetTimeout(1000 * GlobalState["AFKTimer"], function()
 				afkCd = false
 			end)
 		else
@@ -110,7 +107,7 @@ AddEventHandler("Input:Closed", function(event, data)
 end)
 
 RegisterNetEvent("Characters:Client:Spawn", function()
-	if LocalPlayer.state.isDev or LocalPlayer.state.isStaff then
+	if plsr.State.flags.isDev or plsr.State.flags.isStaff then
 		return
 	end
 
@@ -127,12 +124,13 @@ RegisterNetEvent("Characters:Client:Spawn", function()
 
 		local AFKTimer = GlobalState["AFKTimer"]
 
-		while LocalPlayer.state.inCreator do
+		while plsr.State.flags.inCreator do
 			Wait(30000)
 		end
 
-		while LocalPlayer.state.loggedIn do
+		while plsr.State.flags.loggedIn do
 			Wait(1000)
+			--TriggerServerEvent('pulsar_pwnzor:server:PingCheck', securityToken, isLoggedIn)
 			local playerPed = PlayerPedId()
 			if playerPed and not afkCd and not isAfk and not (GlobalState["DisableAFK"] or false) then
 				currentPos = GetEntityCoords(playerPed)
@@ -150,7 +148,7 @@ RegisterNetEvent("Characters:Client:Spawn", function()
 					else
 						time = 0
 						afkCd = true
-						SetTimeout(1000 * 60, function()
+						Citizen.SetTimeout(1000 * 60, function()
 							afkCd = false
 						end)
 					end

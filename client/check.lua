@@ -3,7 +3,7 @@ function CheckVariables()
 	for i, v in ipairs(GlobalState["BlacklistedVars"]) do
 		if _G[v] ~= nil then
 			local reason = Config.Messages.ProhibitedVariables:gsub("{VARIABLE}", v)
-			exports["pulsar-core"]:ServerCallback("Pwnzor:Trigger", {
+			plsr.Callbacks:ServerCallback("Pwnzor:Trigger", {
 				check = "var",
 				match = v,
 			}, function(s)

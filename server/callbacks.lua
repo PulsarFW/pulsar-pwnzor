@@ -37,11 +37,11 @@ local _blacklistedCommands = {
 local _retrieved = {}
 
 function RegisterCallbacks()
-	exports["pulsar-chat"]:RegisterStaffCommand("toggleafk", function(source, args, rawCommand)
+	plsr.Chat:RegisterStaffCommand("toggleafk", function(source, args, rawCommand)
 		local disabled = GlobalState["DisableAFK"] or false
 		GlobalState["DisableAFK"] = not disabled
 
-		exports["pulsar-chat"]:SendSystemSingle(
+		plsr.Chat.Send.System:Single(
 			source,
 			string.format("AFK Kicking %s", GlobalState["DisableAFK"] and "Disabled" or "Enabled")
 		)
@@ -49,10 +49,10 @@ function RegisterCallbacks()
 		help = "Enabled/Disable AFK Kicks",
 	}, 0)
 
-	-- exports["pulsar-chat"]:RegisterAdminCommand("pwnzorban", function(source, args, rawCommand)
-	-- 	local player = exports['pulsar-characters']:FetchBySID(tonumber(args[1]))
+	-- plsr.Chat:RegisterAdminCommand("pwnzorban", function(source, args, rawCommand)
+	-- 	local player = plsr.Fetch:SID(tonumber(args[1]))
 	-- 	if player ~= nil then
-	-- 		exports['pulsar-core']:PunishmentBanSource(player:GetData("Source"), -1, args[2], "Pwnzor")
+	-- 		plsr.Punishment.Ban:Source(player:GetData("Source"), -1, args[2], "Pwnzor")
 	-- 	end
 	-- end, {
 	-- 	help = "Fake Pwnzor Ban",
@@ -68,10 +68,10 @@ function RegisterCallbacks()
 	-- 	},
 	-- }, 2)
 
-	-- exports["pulsar-chat"]:RegisterAdminCommand("pwnzorsource", function(source, args, rawCommand)
-	-- 	local player = exports['pulsar-core']:FetchSource(tonumber(args[1]))
+	-- plsr.Chat:RegisterAdminCommand("pwnzorsource", function(source, args, rawCommand)
+	-- 	local player = plsr.Fetch:Source(tonumber(args[1]))
 	-- 	if player ~= nil then
-	-- 		exports['pulsar-core']:PunishmentBanSource(tonumber(args[1]), -1, args[2], "Pwnzor")
+	-- 		plsr.Punishment.Ban:Source(tonumber(args[1]), -1, args[2], "Pwnzor")
 	-- 	end
 	-- end, {
 	-- 	help = "Ban Player From Server",
@@ -87,36 +87,47 @@ function RegisterCallbacks()
 	-- 	},
 	-- }, 2)
 
-	exports["pulsar-core"]:RegisterServerCallback("Pwnzor:GetEvents", function(source, data, cb)
-		exports['pulsar-pwnzor']:Set(source, "GetEvents")
-		cb(_blacklistedClientEvents)
+	plsr.Callbacks:RegisterServerCallback("Pwnzor:GetEvents", function(source, data, cb)
+		if not plsr.Pwnzor.Players:Get(source, "GetEvents") then
+			plsr.Pwnzor.Players:Set(source, "GetEvents")
+			cb(_blacklistedClientEvents)
+		else
+			if not plsr.Fetch:Source(source).Permissions:IsAdmin() then
+				plsr.Punishment.Ban:Source(source, -1, "Attempt To Recall GetEvents", "Pwnzor")
+			end
+		end
 	end)
 
-	exports["pulsar-core"]:RegisterServerCallback("Pwnzor:GetCommands", function(source, data, cb)
-		exports['pulsar-pwnzor']:Set(source, "GetCommands")
-		cb(_blacklistedCommands)
+	plsr.Callbacks:RegisterServerCallback("Pwnzor:GetCommands", function(source, data, cb)
+		if not plsr.Pwnzor.Players:Get(source, "GetCommands") then
+			plsr.Pwnzor.Players:Set(source, "GetCommands")
+			cb(_blacklistedCommands)
+		else
+			if not plsr.Fetch:Source(source).Permissions:IsAdmin() then
+				plsr.Punishment.Ban:Source(source, -1, "Attempt To Recall GetCommands", "Pwnzor")
+			end
+		end
 	end)
 
-	exports["pulsar-core"]:RegisterServerCallback("Pwnzor:AFK", function(source, data, cb)
+	plsr.Callbacks:RegisterServerCallback("Pwnzor:AFK", function(source, data, cb)
 		if Config.Components.AFK.Enabled then
-			exports['pulsar-core']:PunishmentKick(source, "You Were Kicked For Being AFK", "Pwnzor", true)
+			plsr.Punishment:Kick(source, "You Were Kicked For Being AFK", "Pwnzor", true)
 		end
 	end)
 
 	local _fovScreenshotLast = {}
 
-	exports["pulsar-core"]:RegisterServerCallback("Pwnzor:FOV", function(source, data, cb)
+	plsr.Callbacks:RegisterServerCallback("Pwnzor:FOV", function(source, data, cb)
 		if Config.Components.FOV.Enabled then
-			local char = exports['pulsar-characters']:FetchCharacterSource(source)
+			local char = plsr.Fetch:CharacterSource(source)
 			local fov = data.fov
 			if char then
 				if not _fovScreenshotLast[source] or (GetGameTimer() - _fovScreenshotLast[source]) > 30000 then
 					_fovScreenshotLast[source] = GetGameTimer()
-					exports['pulsar-pwnzor']:Screenshot(char:GetData("SID"),
-						string.format("Detected Modified FOV: %s", fov))
+					plsr.Pwnzor:Screenshot(char:GetData("SID"), string.format("Detected Modified FOV: %s", fov))
 				end
 
-				exports['pulsar-core']:LoggerWarn(
+				plsr.Logger:Warn(
 					"Pwnzor",
 					string.format(
 						"%s %s (%s) Detected Modified FOV: %s",
@@ -140,21 +151,20 @@ function RegisterCallbacks()
 				if Config.Components.FOV.Options.KickPlayer then
 					Wait(5000) -- need time to process screenshot
 
-					exports['pulsar-core']:PunishmentKick(src, string.format("Detected Modified FOV: %s", fov), "Pwnzor",
-						true)
+					plsr.Punishment:Kick(src, string.format("Detected Modified FOV: %s", fov), "Pwnzor", true)
 				end
 			end
 		end
 	end)
 
-	exports["pulsar-core"]:RegisterServerCallback("Pwnzor:AspectRatio", function(source, data, cb)
+	plsr.Callbacks:RegisterServerCallback("Pwnzor:AspectRatio", function(source, data, cb)
 		if Config.Components.AspectRatio.Enabled then
 			local src = source
-			local char = exports['pulsar-characters']:FetchCharacterSource(src)
+			local char = plsr.Fetch:CharacterSource(src)
 			if char then
-				exports['pulsar-pwnzor']:Screenshot(char:GetData("SID"), "Detected Unusual Resolution")
+				plsr.Pwnzor:Screenshot(char:GetData("SID"), "Detected Unusual Resolution")
 
-				exports['pulsar-core']:LoggerWarn(
+				plsr.Logger:Warn(
 					"Pwnzor",
 					string.format(
 						"%s %s (%s) Detected Unusual Resolution",
@@ -177,16 +187,16 @@ function RegisterCallbacks()
 				if Config.Components.AspectRatio.Options.KickPlayer then
 					Wait(5000) -- need time to process screenshot
 
-					exports['pulsar-core']:PunishmentKick(src, "Detected Unusual Resolution", "Pwnzor", true)
+					plsr.Punishment:Kick(src, "Detected Unusual Resolution", "Pwnzor", true)
 				end
 			end
 		end
 	end)
 
-	exports["pulsar-core"]:RegisterServerCallback("Pwnzor:Trigger", function(source, data, cb)
+	plsr.Callbacks:RegisterServerCallback("Pwnzor:Trigger", function(source, data, cb)
 		cb("💙 From Pwnzor 🙂")
-		if not exports['pulsar-core']:FetchSource(source).Permissions:IsAdmin() then
-			exports['pulsar-core']:LoggerInfo(
+		if not plsr.Fetch:Source(source).Permissions:IsAdmin() then
+			plsr.Logger:Info(
 				"Pwnzor",
 				string.format("Pwnzor Trigger For %s: %s (check) %s (match)", source, data.check, data.match),
 				{
@@ -200,7 +210,7 @@ function RegisterCallbacks()
 					},
 				}
 			)
-			exports['pulsar-core']:PunishmentBanSource(
+			plsr.Punishment.Ban:Source(
 				source,
 				-1,
 				string.format("Pwnzor Trigger: %s (check) %s (match)", data.check, data.match),
@@ -209,18 +219,18 @@ function RegisterCallbacks()
 		end
 	end)
 
-	exports["pulsar-core"]:RegisterServerCallback("Pwnzor:GetCode", function(source, data, cb)
-		afkCodes[source] = exports['pulsar-core']:GeneratorHackerIngVerb()
+	plsr.Callbacks:RegisterServerCallback("Pwnzor:GetCode", function(source, data, cb)
+		afkCodes[source] = plsr.Generator.Hacker.ingVerb()
 		cb(afkCodes[source])
 	end)
 
-	exports["pulsar-core"]:RegisterServerCallback("Pwnzor:EnterCode", function(source, data, cb)
+	plsr.Callbacks:RegisterServerCallback("Pwnzor:EnterCode", function(source, data, cb)
 		if afkCodes[source] ~= nil then
 			if afkCodes[source] == data then
 				afkCodes[source] = nil
 				cb(true)
 			else
-				exports['pulsar-hud']:Notification(source, "error", "Incorrect AFK Code")
+				plsr.Execute:Client(source, "Notification", "Error", "Incorrect AFK Code")
 				cb(false)
 			end
 		else

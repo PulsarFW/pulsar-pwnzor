@@ -257,8 +257,8 @@ for k, v in ipairs(_blacklistedEvents) do
 	RegisterNetEvent(v)
 	AddEventHandler(v, function()
 		local src = source
-		if not exports['pulsar-core']:FetchSource(src).Permissions:IsAdmin() then
-			exports['pulsar-core']:PunishmentBanSource(src, -1, "Pwnzor Event Trigger: " .. v, "Pwnzor")
+		if not plsr.Fetch:Source(src).Permissions:IsAdmin() then
+			plsr.Punishment.Ban:Source(src, -1, "Pwnzor Event Trigger: " .. v, "Pwnzor")
 		end
 	end)
 end

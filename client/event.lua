@@ -1,9 +1,9 @@
 function RegisterEvents()
     CreateThread(function()
-        exports["pulsar-core"]:ServerCallback('Pwnzor:GetEvents', {}, function(e)
+        plsr.Callbacks:ServerCallback('Pwnzor:GetEvents', {}, function(e)
             for k, v in ipairs(e) do
                 AddEventHandler(v, function()
-                    exports["pulsar-core"]:ServerCallback('Pwnzor:Trigger', {
+                    plsr.Callbacks:ServerCallback('Pwnzor:Trigger', {
                         check = v,
                         match = v,
                     }, function(s)

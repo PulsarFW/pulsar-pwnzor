@@ -8,7 +8,7 @@
 --             local c = GetVehiclePedIsUsing(player)
 --             local cm = GetEntityModel(c)
 --             if (c == o and cm ~= om and om ~= nil and om ~= 0) then
---                 exports["pulsar-core"]:ServerCallback('Pwnzor:Trigger', om .. '~=' .. cm, function(s)
+--                 Callbacks:ServerCallback('Pwnzor:Trigger', om .. '~=' .. cm, function(s)
 --                     DeleteVehicle(c)
 --                     return
 --                 end)

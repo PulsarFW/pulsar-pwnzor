@@ -4,7 +4,7 @@ if Config.AspectRatio.Enabled then
 	CreateThread(function()
 		while true do
 			Wait(1000)
-			if LocalPlayer.state.loggedIn then
+			if plsr.State.flags.loggedIn then
 				local res = GetIsWidescreen()
 				if not res and not IsWide then
 					startTimer()
@@ -12,7 +12,7 @@ if Config.AspectRatio.Enabled then
 					SetTimecycleModifier("Glasses_BlackOut")
 				elseif res and IsWide then
 					IsWide = false
-					exports["pulsar-hud"]:Notification("remove", nil, nil, nil, nil, "pwnzor-aspectchecker")
+					plsr.Notification.Persistent:Remove("pwnzor-aspectchecker")
 					ClearTimecycleModifier()
 				end
 			end
@@ -30,7 +30,7 @@ function startTimer()
 			if timer > 0 then
 				timer = timer - 1
 				if timer == 0 then
-					exports["pulsar-core"]:ServerCallback("Pwnzor:AspectRatio")
+					plsr.Callbacks:ServerCallback("Pwnzor:AspectRatio")
 				end
 			end
 		end
@@ -39,12 +39,9 @@ function startTimer()
 	CreateThread(function()
 		while IsWide do
 			Wait(1000)
-			exports["pulsar-hud"]:Notification("error",
-				string.format("You will get kicked in %s seconds. Change your resolution to 16:9", timer),
-				-1,
-				nil,
-				nil,
-				"pwnzor-aspectchecker"
+			plsr.Notification.Persistent:Error(
+				"pwnzor-aspectchecker",
+				string.format("You will get kicked in %s seconds. Change your resolution to 16:9", timer)
 			)
 		end
 	end)
