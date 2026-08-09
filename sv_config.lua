@@ -232,6 +232,6 @@ Config = {
 		["pulsar_phone"] = true,
 		["pulsar_robbery"] = true,
 		["pulsar_targeting"] = true,
-		["screenshot-basic"] = true,
+		["screencapture"] = true,
 	},
 }
